@@ -64,12 +64,77 @@ And run the simulator in **Autonomous Mode**, you can override the autonomous co
 
 
 ## Challenges
+Lighting is a crucial aspect that significantly impacts the performance of self-driving vehicles. To evaluate the efficacy of each preprocessing method, four images were selected from the dataset, enabling a visual representation of the effectiveness of each technique. These images covered a range of lighting conditions, including scenarios such as: <br>
+(a) The road lane under full bright conditions; <br>
+(b) An area shadowed by surrounding objects; <br>
+(c) Shadows cast by trees onto the road;  <br>
+(d) Shadows obscuring a section of the road.
+
+![original](/media/4_original.png)
+
+### 1. Canny Edge Detection
+
+![canny_edge](/media/4_canny.png)
+
+### 2. Thresholding
+
+![thresholding](/media/4_thresholding.png)
+
+### 3. Adaptive Thresholding
+
+![adaptive_thresholding](/media/4_adaptive_thresholding.png)
+
+### Observation
+*Edge detection* algorithm used in this cases faced challenges due to rapidly changing lighting conditions on the track. We found that **shadows** in the images significantly affected the algorithm's performance, resulting in the absence of detectable edges, mistaken identification of shadows, and incorrect highlighting of road lane edges. The shadows pose a significant challenge to the algorithm, hindering the accurate identification of road lanes.
 
 ## Approach
+Due to the limitations encountered with *edge segmentation* such as challenges in handling shadows, a shift in approach is necessary to explore alternative methods for effectively identifying road lanes under diverse conditions. One approach involves leveraging **colour segmentation techniques**. Unlike edge segmentation, which struggles to handle varying lighting conditions and complex scenarios, colour segmentation operates in the colour space and offers the potential to better isolate and identify the road lane based on its distinctive chromatic properties.
+
+*Colour segmentation* is utilized in the **Hue, Saturation, Lightness (HSL)** colour space instead of the Red, Green, Blue (RGB) or Hue, Saturation, Value (HSV) colour spaces due to its advantages in addressing challenges and enhancing the accuracy of lane detection. The hue component represents the type of colour, saturation denotes the intensity of the colour, and lightness determines the brightness of the colour. The HSL colour space separates colour information from intensity instead of colour like RGB, making it particularly suitable for scenarios where lighting conditions vary significantly. By decoupling the luminance component from the chromatic components, the HSL colour space allows for more effective colour-based segmentation and facilitates better detection of lane boundaries under different lighting conditions.
+
+![HSL-color-space](/media/HSL.png)
+
+We can investigate and record the HSL values of the road lane with the [colour picker](/src/hsv_color_picker.py). By calculating the average HSL value of the road lane, we can construct two sets of condition equations, one for bright scenarios and another for shadowed conditions, which fulfil all the specified boundary conditions for extracting the road lane.
+1. Condition for isolating white lane in the dark area
+```
+condition_1 = (h_channel > 100) & (h_channel < 120) & \
+              ((s_channel - l_channel) > 20) & \
+              ((s_channel - l_channel) < 40) & \
+              (s_channel > 60)
+
+```
+2. Condition for isolating white lane in the bright area
+```
+condition_2 = (h_channel > 15) & (h_channel < 40) & \
+              ((((s_channel - l_channel) > 175) & ((s_channel - l_channel) < 220)) |
+              ((s_channel > 200) & (l_channel > 100)))
+
+```
+
+## Results
+
+### 1. Binary mask created by applying HSL filter
+
+![binary](/media/4_binary.png)
+
+### 2. Combined image of the binary mask and the original image
+
+![binary](/media/4_3layer.png)
+
+### 3. Grey-scaled image of 2. (reduced noise)
+
+![binary](/media/4_1layer.png)
+
+### 4. Enhanced image with reduced weight in Hue and Saturation channel
+
+![binary](/media/4_1layer_enhanced.png)
+
+### Observation
+The HSL filter was applied to isolate the road lane from the original images, both bright and dark, with successful results. However, deploying the masked image individually in real-world scenarios is not safe since it filters out all background information, potentially leading to dangerous situations if the real-time processing algorithm fails to capture the road lane. To address this issue, the binary image can be added back to the original image with an increased lightness value, enhancing the prominence of the white lane. Additionally, the weight of the hue and saturation channels can be reduced before the grey-scaling process, further optimizing the result. The enhanced image with reduced weight in Hue and Saturation channels has a dimmed background and less conspicuous shadows, effectively highlighting the road lane. This approach helps to diminish unwanted features in the images, increasing the likelihood of extracting essential features during the subsequent training process, ultimately improving the model's performance in lane detection and steering prediction.
 
 ## References
 
 [Udacity self-driving-car-sim](https://github.com/udacity/self-driving-car-sim)<br>
 [End-to-End Deep Learning for Self-Driving Cars](https://developer.nvidia.com/blog/deep-learning-self-driving-cars/)<br>
-[A-Complete-Guide-to-Self-Driving-Car](https://www.codeproject.com/Articles/1273179/A-Complete-Guide-to-Self-Driving-Car)
+[A-Complete-Guide-to-Self-Driving-Car](https://www.codeproject.com/Articles/1273179/A-Complete-Guide-to-Self-Driving-Car)<br>
 
