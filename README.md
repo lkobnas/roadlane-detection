@@ -69,7 +69,7 @@ And run the simulator in **Autonomous Mode**, you can override the autonomous co
 
 ## References
 
-[Udacity self-driving-car-sim](https://github.com/udacity/self-driving-car-sim)
-[End-to-End Deep Learning for Self-Driving Cars](https://developer.nvidia.com/blog/deep-learning-self-driving-cars/)
+[Udacity self-driving-car-sim](https://github.com/udacity/self-driving-car-sim)<br>
+[End-to-End Deep Learning for Self-Driving Cars](https://developer.nvidia.com/blog/deep-learning-self-driving-cars/)<br>
 [A-Complete-Guide-to-Self-Driving-Car](https://www.codeproject.com/Articles/1273179/A-Complete-Guide-to-Self-Driving-Car)
 
